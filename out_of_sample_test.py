@@ -1,6 +1,6 @@
 import numpy as np
 from markowirtz_networks import *
-from utils_general import *
+from set_up import *
 
 def check_pdf(matrix):
     cov_matrix = matrix.cov()

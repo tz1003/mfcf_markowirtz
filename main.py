@@ -1,6 +1,6 @@
 from out_of_sample_test import generate_random_list,mfcf_test
 import numpy as np
-from utils_general import *
+from set_up import *
 
 training_window_list = [30,90,180,300,500]
 #testing_window_list = [21,90,300]

@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-from TMFG_core_v2 import TMFG
+from TMFG_core import TMFG
 import pickle
 from MFCF_main import MFCF_Forest
 from gain_function import gf_sumsquares_gen
 from utils_mfcf import j_LoGo
-from utils_general import *
+from set_up import *
 
 loaded_model = pickle.load(open('dt.sav', 'rb'))
 
