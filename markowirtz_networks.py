@@ -6,6 +6,7 @@ from MFCF_main import MFCF_Forest
 from gain_function import gf_sumsquares_gen
 from utils_mfcf import j_LoGo
 from set_up import *
+import random
 
 loaded_model = pickle.load(open('dt.sav', 'rb'))
 
@@ -67,6 +68,13 @@ def generate_cov_mfcf(return_matrix, model_input, rd_date,training_window,lag=21
                 prediction.append(-1)
         prediction_result = pd.Series(prediction, index=['col_{}'.format(i) for i in range(len(np.array(return_matrix)[0]))])
         sample_mean = df.std()*np.sqrt(252)*prediction_result
+
+
+    elif method == 'std_random':
+        prediction = [random.choice([1, -1]) for _ in range(len(return_matrix.columns))]
+        prediction_result = pd.Series(prediction, index=['col_{}'.format(i) for i in range(len(np.array(return_matrix)[0]))])
+        sample_mean = df.std()*np.sqrt(252)*prediction_result
+    
         
     elif method == 'capm':
         prediction = []

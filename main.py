@@ -1,4 +1,4 @@
-from out_of_sample_test import generate_random_list,mfcf_test
+from out_of_sample_test import generate_random_list,mfcf_test,generate_random_list_largest_var
 import numpy as np
 from set_up import *
 
@@ -7,7 +7,8 @@ training_window_list = [30,90,180,300,500]
 testing_window_list = [21]
 num_iter=10
 return_rate_matrix,model_input = generate_nasdaq() 
-in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list = generate_random_list(return_rate_matrix, model_input, training_window_list, testing_window_list, num_iter=num_iter,sample_size=20)
+#in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list = generate_random_list(return_rate_matrix, model_input, training_window_list, testing_window_list, num_iter=num_iter,sample_size=20)
+in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list = generate_random_list_largest_var(return_rate_matrix, model_input, training_window_list, testing_window_list, num_iter=num_iter,sample_size=20)
 #method_list = ['mean','std','ema','std_o','capm',]
 method_list = ['std']
 #iteration_range_mfcf = np.arange(-0.05,0.05,0.001) # for small scale
