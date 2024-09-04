@@ -1,10 +1,16 @@
 import numpy as np
 from markowirtz_networks import *
 from set_up import *
+ct_control = {
+'max_clique_size': 2,
+'min_clique_size': 1,
+'threshold': 0.00,
+'coordination_num':np.inf,
+'drop_sep': False
+}
 
 def check_pdf(matrix):
     cov_matrix = matrix.cov()
-    np.linalg.matrix_rank(cov_matrix)
     W = correlation_from_covariance(cov_matrix)
     #cov_matrix.columns[128]
     #W = correlation_from_covariance(cov_matrix)
@@ -19,6 +25,33 @@ def check_pdf(matrix):
 
     # Check if all eigenvalues are positive
     return np.all(eigenvalues > 0)
+
+
+def check_invertible(adj_matrix,rd_date, training_window, model_input,ct_control):
+    try:
+        generate_cov_mfcf(adj_matrix, model_input,
+                    rd_date, training_window,
+                    ct_control=ct_control,
+                    method='std')
+        return True
+    except:
+        return False
+"""
+def check_invertible(adj_matrix):
+
+
+    
+    # Convert adjacency matrix to NumPy array if it's not already
+    adj_matrix = np.array(adj_matrix)
+    # Calculate the covariance matrix
+    covariance_matrix = np.cov(adj_matrix, rowvar=False)
+    # Calculate the correlation matrix
+    correlation_matrix = np.corrcoef(covariance_matrix)
+    # Check if the correlation matrix is invertible
+    determinant = np.linalg.det(correlation_matrix)
+    is_invertible = determinant != 0
+    return is_invertible
+"""
 
 def check_nan(matrix):
     if len(matrix.columns)  == len(matrix.dropna(axis=1).columns):
@@ -94,7 +127,7 @@ def generate_random_list_largest_var(return_rate_matrix, model_input, training_w
 
 
     
-def generate_random_list(return_rate_matrix, model_input, training_window_list, testing_window_list, num_iter=10,sample_size=30):
+def generate_random_list(return_rate_matrix, model_input, training_window_list, testing_window_list, num_iter=10,sample_size=30,random_date_assigned=None):
     ct = 0
     training_window = max(training_window_list)
     testing_window = max(testing_window_list)
@@ -102,40 +135,89 @@ def generate_random_list(return_rate_matrix, model_input, training_window_list, 
     in_sample_return_matrix_list = {}
     out_sample_return_matrix_list = {}
     excluding_list = [1198,1219,1449,1471,1699,1723,1950,2200,2225,2455,2475]
-    while True:
-        # generate random date
-        rd_date = generate_random_day(return_rate_matrix,training_window=training_window, testing_window=testing_window)
-        if rd_date > 1108+training_window and rd_date <2488-testing_window and rd_date not in excluding_list:
-            passing_label = 1
-            # Randomly select 20 columns
-            columns = [col for col in return_rate_matrix.columns if col not in ["Index", "date"]]
-            selected_columns = random.sample(columns, sample_size)
-                        
-            for training_window in training_window_list:
-                for testing_window in testing_window_list:
-                    in_sample_return_matrix, out_sample_return_matrix = generate_dataset(return_rate_matrix,
-                                            training_window=training_window, 
-                                            testing_window=testing_window,
-                                            rdm_day = rd_date,selected_columns=selected_columns)
-                    #print(check_pdf(in_sample_return_matrix)==True and check_pdf(out_sample_return_matrix)==True,training_window,testing_window)
-                    if not (check_pdf(in_sample_return_matrix)==True and check_pdf(out_sample_return_matrix)==True and check_nan(in_sample_return_matrix)==True and check_nan(out_sample_return_matrix)==True and check_prediction(model_input,rd_date,selected_columns)==True):
-                        passing_label=0
-            #print(passing_label)
-            if passing_label==1:
+    if type(random_date_assigned) !=type(None):
+        #for rd_date in random_date_list:
+        for rd_date in random_date_assigned:
+            #print(rd_date)
+            # generate random date
+            #rd_date = generate_random_day(return_rate_matrix,training_window=training_window, testing_window=testing_window)
+            if rd_date > model_input['Index'].min()+training_window and rd_date <model_input['Index'].max()-testing_window and rd_date not in excluding_list:
+                passing_label = 1
+                # Randomly select 20 columns
+                columns = [col for col in return_rate_matrix.columns if col not in ["Index", "date"]]
+                selected_columns = random.sample(columns, sample_size)
+                            
                 for training_window in training_window_list:
                     for testing_window in testing_window_list:
                         in_sample_return_matrix, out_sample_return_matrix = generate_dataset(return_rate_matrix,
                                                 training_window=training_window, 
                                                 testing_window=testing_window,
                                                 rdm_day = rd_date,selected_columns=selected_columns)
-                        
-                        in_sample_return_matrix_list[(training_window,rd_date)]=in_sample_return_matrix
-                        out_sample_return_matrix_list[(testing_window,rd_date)]=out_sample_return_matrix
-                random_date_list.append(rd_date)
+                        #print(check_pdf(in_sample_return_matrix) and check_pdf(out_sample_return_matrix))
+                        #print(check_pdf(in_sample_return_matrix)==True and check_pdf(out_sample_return_matrix)==True,training_window,testing_window)
+                        if not (check_invertible(in_sample_return_matrix,rd_date, training_window, model_input,ct_control)==True and \
+                                check_invertible(out_sample_return_matrix,rd_date, training_window, model_input,ct_control)==True and \
+                                check_nan(in_sample_return_matrix)==True and \
+                                check_nan(out_sample_return_matrix)==True and\
+                                check_prediction(model_input,rd_date,selected_columns)==True):
+                            passing_label=0
+                if passing_label==1:
+                    for training_window in training_window_list:
+                        for testing_window in testing_window_list:
+                            in_sample_return_matrix, out_sample_return_matrix = generate_dataset(return_rate_matrix,
+                                                    training_window=training_window, 
+                                                    testing_window=testing_window,
+                                                    rdm_day = rd_date,selected_columns=selected_columns)
+                            
+                            in_sample_return_matrix_list[(training_window,rd_date)]=in_sample_return_matrix
+                            out_sample_return_matrix_list[(testing_window,rd_date)]=out_sample_return_matrix
+                    random_date_list.append(rd_date)
 
-                ct+=1
-                if ct>=num_iter:
-                    return in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list
+
+        return in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list
+
+
+    else:
+
+    
+        while True:
+            # generate random date
+            rd_date = generate_random_day(return_rate_matrix,training_window=training_window, testing_window=testing_window)
+            if rd_date > 1108+training_window and rd_date <2488-testing_window and rd_date not in excluding_list:
+                passing_label = 1
+                # Randomly select 20 columns
+                columns = [col for col in return_rate_matrix.columns if col not in ["Index", "date"]]
+                selected_columns = random.sample(columns, sample_size)
+                            
+                for training_window in training_window_list:
+                    for testing_window in testing_window_list:
+                        in_sample_return_matrix, out_sample_return_matrix = generate_dataset(return_rate_matrix,
+                                                training_window=training_window, 
+                                                testing_window=testing_window,
+                                                rdm_day = rd_date,selected_columns=selected_columns)
+                        #print(check_pdf(in_sample_return_matrix) and check_pdf(out_sample_return_matrix))
+                        #print(check_pdf(in_sample_return_matrix)==True and check_pdf(out_sample_return_matrix)==True,training_window,testing_window)
+                        if not (check_invertible(in_sample_return_matrix,rd_date, training_window, model_input,ct_control)==True and \
+                                check_invertible(out_sample_return_matrix,rd_date, training_window, model_input,ct_control)==True and \
+                                check_nan(in_sample_return_matrix)==True and \
+                                check_nan(out_sample_return_matrix)==True and\
+                                check_prediction(model_input,rd_date,selected_columns)==True):
+                            passing_label=0
+                if passing_label==1:
+                    for training_window in training_window_list:
+                        for testing_window in testing_window_list:
+                            in_sample_return_matrix, out_sample_return_matrix = generate_dataset(return_rate_matrix,
+                                                    training_window=training_window, 
+                                                    testing_window=testing_window,
+                                                    rdm_day = rd_date,selected_columns=selected_columns)
+                            
+                            in_sample_return_matrix_list[(training_window,rd_date)]=in_sample_return_matrix
+                            out_sample_return_matrix_list[(testing_window,rd_date)]=out_sample_return_matrix
+                    random_date_list.append(rd_date)
+
+                    ct+=1
+                    if ct>=num_iter:
+                        return in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list
 
 
 def mfcf_test(random_date_list, in_sample_return_matrix_list, out_sample_return_matrix_list, model_input,

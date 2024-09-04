@@ -35,7 +35,7 @@ def generate_nasdaq():
     return_rate_matrix.reset_index(drop=True,inplace=True)
 
     # discarding the depedent stocks
-    return_rate_matrix.drop(['DISCB','DISCK','LBTYK','UAL','LBTYA','LBTYB','MASI'],axis=1,inplace=True)
+    return_rate_matrix.drop(['DISCB','DISCK','LBTYK','UAL','LBTYA','LBTYB','MASI','IBKR'],axis=1,inplace=True)
 
 
     # remove market closed date for BL
