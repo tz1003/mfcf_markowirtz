@@ -5,7 +5,7 @@ from set_up import *
 training_window_list = [30,90,180,300,500]
 #testing_window_list = [21,90,300]
 testing_window_list = [21]
-num_iter=10
+num_iter=100
 return_rate_matrix,model_input = generate_nasdaq() 
 #in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list = generate_random_list(return_rate_matrix, model_input, training_window_list, testing_window_list, num_iter=num_iter,sample_size=20)
 in_sample_return_matrix_list, out_sample_return_matrix_list, random_date_list = generate_random_list_largest_var(return_rate_matrix, model_input, training_window_list, testing_window_list, num_iter=num_iter,sample_size=20)

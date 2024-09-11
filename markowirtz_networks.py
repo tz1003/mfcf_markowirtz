@@ -10,7 +10,7 @@ import os
 
 # load model
 parent_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
-model_path = os.path.join(parent_dir, 'dt.sav')
+model_path = os.path.join(parent_dir, 'rf.sav')
 loaded_model = pickle.load(open(model_path, 'rb'))
 #loaded_model = pickle.load(open('dt.sav', 'rb'))
 
@@ -48,8 +48,15 @@ def generate_cov_mfcf(return_matrix, model_input, rd_date,training_window,lag=21
             symbol = return_matrix.columns[i]
             predicting_base = model_input[model_input['Ticker']==symbol]
             predicting_base = predicting_base[predicting_base['Index']==rd_date] 
-            predicting_base = predicting_base[['Volume', 'call_put_ratio_200', 'SQZ', 'MACD', 'vix_fix_gauge',
-            'Greater_than_MA99',  'Greater_than_MA125', 'Index', 'Ticker_label','Close']]
+            predicting_base = predicting_base[['call_put_ratio_200',
+                                                'SQZ',
+                                                'MACD',
+                                                'vix_fix_gauge',
+                                                'Index',
+                                                'Greater_than_MA125',
+                                                'Ticker_label',
+                                                'Close',
+                                                'market_sum']]
             pre_X = loaded_model.predict(predicting_base)[0]
             if pre_X  ==1:
                 prediction.append(1)
@@ -134,8 +141,15 @@ def sortino(return_matrix, model_input, rd_date,training_window,lag=21,ct_contro
             symbol = return_matrix.columns[i]
             predicting_base = model_input[model_input['Ticker']==symbol]
             predicting_base = predicting_base[predicting_base['Index']==rd_date] 
-            predicting_base = predicting_base[['Volume', 'call_put_ratio_200', 'SQZ', 'MACD', 'vix_fix_gauge',
-            'Greater_than_MA99',  'Greater_than_MA125', 'Index', 'Ticker_label','Close']]
+            predicting_base = predicting_base[['call_put_ratio_200',
+                                                'SQZ',
+                                                'MACD',
+                                                'vix_fix_gauge',
+                                                'Index',
+                                                'Greater_than_MA125',
+                                                'Ticker_label',
+                                                'Close',
+                                                'market_sum']]
             pre_X = loaded_model.predict(predicting_base)[0]
             if pre_X  ==1:
                 prediction.append(1)

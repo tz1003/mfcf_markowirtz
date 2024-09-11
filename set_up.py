@@ -2,11 +2,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import random
+import os
 np.random.seed(123)
+
+# Get the current working directory (assuming you are running the script from the correct folder)
+current_directory = os.getcwd()
+# Change the working directory to the parent directory
+parent_directory = os.path.abspath(os.path.join(current_directory, '..'))
+# Step 2: Construct the full path to the CSV file (replace 'model_input.csv' with your actual file)
+price_data = os.path.join(parent_directory, 'NASDAQ_100_MCap.csv')
+
 
 def generate_nasdaq():
     # load data
-    stock_data = pd.read_csv('NASDAQ_100_MCap.csv')
+    stock_data = pd.read_csv(price_data)
 
     # list out all the symbol
     symbol_list = [stock_data.columns[i][:-10] for i in range(len(stock_data.columns))][1:]
@@ -48,14 +57,18 @@ def generate_nasdaq():
     stock_data.reset_index(drop=True,inplace=True)
 
     # input data for prediction of model
-    model_input = pd.read_csv('model_input_nasdaq.csv')
+    parent_directory = os.path.abspath(os.path.join(current_directory, '..'))
+    # Step 2: Construct the full path to the CSV file (replace 'model_input.csv' with your actual file)
+    model_input_data = os.path.join(parent_directory, 'model_input_nasdaq.csv')
+    model_input = pd.read_csv(model_input_data)
     # Drop rows where Ticker is 'LBTYB'
     model_input = model_input[model_input['Ticker'] != 'LBTYB']
     model_input.reset_index(drop=True,inplace=True)
-    model_input = model_input[['Volume', 'call_put_ratio_200',  'SQZ',
-        'MACD', 'vix_fix_gauge',  'Greater_than_MA99',#'mkt_cap',
-        'Greater_than_MA125','Index','Ticker_label','Close','Ticker',
-        'tresuary_bills_60', 'mkt_return']]
+    model_input = model_input[['Volume', 'call_put_ratio_200', 'MA_99',
+       'MA_125', 'SQZ', 'MACD', 'vix_fix_gauge', 'Close', 
+       'Greater_than_MA125', 'Index', 'if_profit_21', 'Ticker_label', 'Ticker',
+       'Date', 'tresuary_bills_60', 'mkt_return', 'market_sum']]
+
 
 
     # select column present in the prediction
